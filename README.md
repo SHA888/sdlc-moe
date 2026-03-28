@@ -139,7 +139,12 @@ Context is serialised across model switches so each specialist sees what happene
 
 ## License
 
-MIT OR Apache-2.0 — commercial use permitted.
+Licensed under either of:
+
+- [MIT License](LICENSE-MIT)
+- [Apache License, Version 2.0](LICENSE-APACHE)
+
+at your option. Commercial use permitted.
 
 ---
 
