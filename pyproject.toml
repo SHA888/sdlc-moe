@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "sdlc-moe"
+version = "0.1.0"
+description = "SDLC-aware local LLM orchestrator"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT OR Apache-2.0"}
+authors = [
+    {name = "SHA888"}
+]
+keywords = ["llm", "orchestrator", "sdlc", "offline", "local"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "aiohttp>=3.9",
+    "typer>=0.9",
+    "rich>=13.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "mypy>=1.7",
+    "ruff>=0.1",
+]
+
+[project.scripts]
+sdlc-moe = "sdlc_moe.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/SHA888/sdlc-moe"
+Repository = "https://github.com/SHA888/sdlc-moe"
+Documentation = "https://github.com/SHA888/sdlc-moe#readme"
+
+[tool.hatch.build.targets.wheel]
+packages = ["sdlc_moe"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+select = [
+    "E",  # pycodestyle errors
+    "F",  # Pyflakes
+    "I",  # isort
+    "N",  # pep8-naming
+    "W",  # pycodestyle warnings
+    "UP", # pyupgrade
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "SIM", # flake8-simplify
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

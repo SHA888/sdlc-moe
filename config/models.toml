@@ -1,0 +1,58 @@
+# SDLC-MoE Model Registry
+# Maps internal model keys to Ollama tags and metadata
+
+[models]
+
+[models.qwen25_coder_7b]
+name = "Qwen2.5-Coder 7B"
+ollama = "qwen2.5-coder:7b"
+description = "Fast general-purpose coding model"
+context_length = 32768
+
+[models.qwen25_coder_32b]
+name = "Qwen2.5-Coder 32B"
+ollama = "qwen2.5-coder:32b"
+description = "High-capacity code generation model"
+context_length = 32768
+
+[models.deepseek_r1_14b]
+name = "DeepSeek R1 14B"
+ollama = "deepseek-r1:14b"
+description = "Reasoning model for architecture and algorithm design"
+context_length = 32768
+
+[models.deepseek_coder_v2_16b]
+name = "DeepSeek-Coder V2 16B"
+ollama = "deepseek-coder-v2:16b"
+description = "Specialized test generation model"
+context_length = 32768
+
+[models.phi4_14b]
+name = "Phi-4 14B"
+ollama = "phi4:14b"
+description = "Requirements analysis and security review"
+context_length = 16384
+
+[models.starcoder2_15b]
+name = "StarCoder2 15B"
+ollama = "starcoder2:15b"
+description = "Fill-in-the-middle code completion"
+context_length = 16384
+
+[models.gemma3_12b]
+name = "Gemma 3 12B"
+ollama = "gemma3:12b"
+description = "Technical documentation generation"
+context_length = 32768
+
+[models.mistral_small3_24b]
+name = "Mistral Small 3 24B"
+ollama = "mistral-small3:24b"
+description = "Requirements analysis for standard tier"
+context_length = 32768
+
+[models.llama33_70b]
+name = "Llama 3.3 70B"
+ollama = "llama3.3:70b"
+description = "Orchestrator model for extended tier"
+context_length = 131072
