@@ -64,7 +64,7 @@ These are verified breakages in the current committed code. The project is not i
   - [x] `CONTRIBUTING.md`
   - [x] `MODELS.md`
 - [x] Add `.github/workflows/ci.yml` if not already — matrix: Python 3.12, 3.13; OS: ubuntu-latest, windows-latest
-- [ ] Tag `v0.1.0` after push and verify CI passes
+- [x] Tag `v0.1.0` after push and verify CI passes
 
 ---
 
