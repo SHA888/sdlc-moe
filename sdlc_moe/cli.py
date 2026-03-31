@@ -14,17 +14,14 @@ from __future__ import annotations
 import asyncio
 import sys
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich import print as rprint
 from rich.console import Console
 
-from sdlc_moe.orchestrator.router import Router
-from sdlc_moe.hardware.probe import detect_tier, ram_summary
-from sdlc_moe.ollama.client import OllamaClient
-from sdlc_moe.orchestrator.classifier import classify
 from sdlc_moe.bench import run_bench
+from sdlc_moe.hardware.probe import detect_tier, ram_summary
+from sdlc_moe.orchestrator.router import Router
 
 console = Console()
 app = typer.Typer(help="SDLC-aware local LLM orchestrator", no_args_is_help=True)
@@ -32,22 +29,24 @@ app = typer.Typer(help="SDLC-aware local LLM orchestrator", no_args_is_help=True
 
 @app.command()
 def info(
-    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Override detected tier"),
-    ollama_url: str = typer.Option("http://localhost:11434", "--ollama-url", help="Ollama server URL"),
+    tier: str | None = typer.Option(None, "--tier", "-t", help="Override detected tier"),
+    ollama_url: str = typer.Option(
+        "http://localhost:11434", "--ollama-url", help="Ollama server URL"
+    ),
 ) -> None:
     """Show hardware tier and model configuration."""
     detected_tier = tier or detect_tier()
-    
+
     rprint(f"[bold]Hardware Tier:[/bold] {detected_tier}")
     rprint(f"[bold]Ollama URL:[/bold] {ollama_url}")
-    
+
     # Show RAM info
     try:
         ram_info = ram_summary()
         rprint(f"[bold]RAM:[/bold] {ram_info['total_gb']:.1f} GB total")
     except (FileNotFoundError, PermissionError, OSError) as e:
         rprint(f"[yellow]Warning: Could not detect RAM: {e}[/yellow]")
-    
+
     # Show model mapping for this tier
     try:
         router = Router(tier=detected_tier, ollama_url=ollama_url)
@@ -63,42 +62,50 @@ def info(
 
 @app.command()
 def preflight(
-    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Override detected tier"),
-    ollama_url: str = typer.Option("http://localhost:11434", "--ollama-url", help="Ollama server URL"),
+    tier: str | None = typer.Option(None, "--tier", "-t", help="Override detected tier"),
+    ollama_url: str = typer.Option(
+        "http://localhost:11434", "--ollama-url", help="Ollama server URL"
+    ),
     pull_missing: bool = typer.Option(False, "--pull", help="Pull missing models"),
 ) -> None:
     """Check Ollama is running and all tier models are available."""
+
     async def _preflight() -> None:
         router = Router(tier=tier, ollama_url=ollama_url)
         status = await router.preflight(pull_missing=pull_missing)
-        
+
         rprint(f"[bold]Tier:[/bold] {status['tier']}")
-        rprint(f"[bold]Ollama:[/bold] {'✓ Running' if status['ollama_running'] else '✗ Not running'}")
-        
+        rprint(
+            f"[bold]Ollama:[/bold] {'✓ Running' if status['ollama_running'] else '✗ Not running'}"
+        )
+
         rprint("\n[bold]Models:[/bold]")
-        for tag, state in status['models'].items():
+        for tag, state in status["models"].items():
             icon = "✓" if state == "ok" else "↓" if state == "pulled" else "✗"
             color = "green" if state == "ok" else "yellow" if state == "pulled" else "red"
             rprint(f"  {icon} [{color}]{tag}[/{color}] ({state})")
-    
+
     asyncio.run(_preflight())
 
 
 @app.command()
 def run(
     prompt: str = typer.Argument(..., help="Prompt to process"),
-    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Override detected tier"),
-    ollama_url: str = typer.Option("http://localhost:11434", "--ollama-url", help="Ollama server URL"),
+    tier: str | None = typer.Option(None, "--tier", "-t", help="Override detected tier"),
+    ollama_url: str = typer.Option(
+        "http://localhost:11434", "--ollama-url", help="Ollama server URL"
+    ),
     stream: bool = typer.Option(False, "--stream", "-s", help="Stream response"),
-    file_path: Optional[str] = typer.Option(None, "--file", "-f", help="File context"),
-    task: Optional[str] = typer.Option(None, "--task", help="Task description"),
-    phase: Optional[str] = typer.Option(None, "--phase", help="Force SDLC phase"),
+    file_path: str | None = typer.Option(None, "--file", "-f", help="File context"),
+    task: str | None = typer.Option(None, "--task", help="Task description"),
+    phase: str | None = typer.Option(None, "--phase", help="Force SDLC phase"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Show routing without inference"),
 ) -> None:
     """Process a prompt with SDLC-aware routing."""
+
     async def _run() -> None:
         router = Router(tier=tier, ollama_url=ollama_url, dry_run=dry_run)
-        
+
         if stream:
             async for chunk in router.route(
                 prompt,
@@ -118,16 +125,22 @@ def run(
                 phase_override=phase,
             )
             rprint(response)
-    
+
     asyncio.run(_run())
 
 
 @app.command()
 def bench(
-    tier: Optional[str] = typer.Option(None, "--tier", "-t", help="Override detected tier"),
-    baseline: str = typer.Option("qwen2.5-coder:7b", "--baseline", help="Single model to compare against"),
-    ollama_url: str = typer.Option("http://localhost:11434", "--ollama-url", help="Ollama server URL"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Write full responses to JSON file"),
+    tier: str | None = typer.Option(None, "--tier", "-t", help="Override detected tier"),
+    baseline: str = typer.Option(
+        "qwen2.5-coder:7b", "--baseline", help="Single model to compare against"
+    ),
+    ollama_url: str = typer.Option(
+        "http://localhost:11434", "--ollama-url", help="Ollama server URL"
+    ),
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Write full responses to JSON file"
+    ),
 ) -> None:
     """Side-by-side latency comparison: orchestrated stack vs a single model."""
     asyncio.run(run_bench(tier=tier, baseline=baseline, ollama_url=ollama_url, output=output))

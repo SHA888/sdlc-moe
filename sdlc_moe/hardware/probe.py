@@ -5,14 +5,12 @@ from __future__ import annotations
 import os
 import platform
 import subprocess
-from pathlib import Path
-from typing import Optional
 
 
 def detect_tier() -> str:
     """Auto-detect hardware tier based on available RAM."""
     ram_gb = _get_total_ram_gb()
-    
+
     if ram_gb < 12:
         return "nano"
     elif ram_gb < 24:
@@ -26,17 +24,17 @@ def detect_tier() -> str:
 def _get_total_ram_gb() -> float:
     """Get total system RAM in GB."""
     system = platform.system()
-    
+
     if system == "Linux":
         try:
-            with open("/proc/meminfo", "r") as f:
+            with open("/proc/meminfo") as f:
                 for line in f:
                     if line.startswith("MemTotal:"):
                         kb = int(line.split()[1])
                         return kb / 1024 / 1024
-        except (IOError, ValueError):
+        except (OSError, ValueError):
             pass
-    
+
     elif system == "Darwin":  # macOS
         try:
             result = subprocess.run(
@@ -49,7 +47,7 @@ def _get_total_ram_gb() -> float:
             return bytes_val / 1024 / 1024 / 1024
         except (subprocess.CalledProcessError, ValueError):
             pass
-    
+
     # Fallback: check environment variable
     env_ram = os.environ.get("SDLC_MOE_RAM_GB")
     if env_ram:
@@ -57,7 +55,7 @@ def _get_total_ram_gb() -> float:
             return float(env_ram)
         except ValueError:
             pass
-    
+
     # Default to nano tier if detection fails
     return 8.0
 
@@ -66,7 +64,7 @@ def ram_summary() -> dict:
     """Return RAM summary for display."""
     total_gb = _get_total_ram_gb()
     tier = detect_tier()
-    
+
     return {
         "total_gb": round(total_gb, 1),
         "tier": tier,
@@ -164,5 +162,5 @@ def load_profile(tier: str) -> dict:
             "orchestrator_model": "llama33_70b",
         },
     }
-    
+
     return profiles.get(tier, profiles["nano"])

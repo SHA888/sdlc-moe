@@ -17,15 +17,13 @@ import asyncio
 import json
 import time
 from pathlib import Path
-from typing import Optional
 
 import typer
+from rich import print as rprint
 from rich.console import Console
 from rich.table import Table
-from rich import print as rprint
 
 from sdlc_moe.ollama.client import OllamaClient
-from sdlc_moe.orchestrator.classifier import classify
 from sdlc_moe.orchestrator.router import Router, _system_prompt_for_phase
 
 console = Console()
@@ -70,7 +68,9 @@ async def _run_orchestrated(prompt: str, phase: str, router: Router) -> tuple[st
     return response, elapsed
 
 
-async def _run_baseline(prompt: str, phase: str, model: str, client: OllamaClient, num_ctx: int) -> tuple[str, float]:
+async def _run_baseline(
+    prompt: str, phase: str, model: str, client: OllamaClient, num_ctx: int
+) -> tuple[str, float]:
     system = _system_prompt_for_phase(phase)
     messages = [{"role": "user", "content": prompt}]
     start = time.monotonic()
@@ -85,10 +85,10 @@ async def _run_baseline(prompt: str, phase: str, model: str, client: OllamaClien
 
 
 async def run_bench(
-    tier: Optional[str],
+    tier: str | None,
     baseline: str,
     ollama_url: str,
-    output: Optional[Path],
+    output: Path | None,
 ):
     router = Router(tier=tier, ollama_url=ollama_url)
     baseline_client = OllamaClient(base_url=ollama_url)
@@ -103,11 +103,19 @@ async def run_bench(
 
     results = []
     table = Table(
-        "Phase", "Orchestrated model", "Time A", "Baseline model", "Time B",
-        box=None, padding=(0, 1), show_header=True,
+        "Phase",
+        "Orchestrated model",
+        "Time A",
+        "Baseline model",
+        "Time B",
+        box=None,
+        padding=(0, 1),
+        show_header=True,
     )
 
-    rprint(f"\n[bold]Bench:[/bold] tier=[cyan]{router.tier}[/cyan]  baseline=[cyan]{baseline}[/cyan]\n")
+    rprint(
+        f"\n[bold]Bench:[/bold] tier=[cyan]{router.tier}[/cyan]  baseline=[cyan]{baseline}[/cyan]\n"
+    )
 
     for item in BENCH_SUITE:
         phase = item["phase"]
@@ -120,14 +128,26 @@ async def run_bench(
 
         with console.status(f"[{phase}] running..."):
             orch_resp, orch_time = await _run_orchestrated(prompt, phase, router)
-            base_resp, base_time = await _run_baseline(prompt, phase, baseline, baseline_client, num_ctx)
+            base_resp, base_time = await _run_baseline(
+                prompt, phase, baseline, baseline_client, num_ctx
+            )
 
-        results.append({
-            "phase": phase,
-            "prompt": prompt,
-            "orchestrated": {"model": orch_tag, "time_s": round(orch_time, 2), "response": orch_resp},
-            "baseline": {"model": baseline, "time_s": round(base_time, 2), "response": base_resp},
-        })
+        results.append(
+            {
+                "phase": phase,
+                "prompt": prompt,
+                "orchestrated": {
+                    "model": orch_tag,
+                    "time_s": round(orch_time, 2),
+                    "response": orch_resp,
+                },
+                "baseline": {
+                    "model": baseline,
+                    "time_s": round(base_time, 2),
+                    "response": base_resp,
+                },
+            }
+        )
 
         faster = "A" if orch_time <= base_time else "B"
         time_a = f"[green]{orch_time:.1f}s[/green]" if faster == "A" else f"{orch_time:.1f}s"
@@ -154,14 +174,20 @@ async def run_bench(
     # Summary
     orch_total = sum(r["orchestrated"]["time_s"] for r in results)
     base_total = sum(r["baseline"]["time_s"] for r in results)
-    rprint(f"\nTotal time — orchestrated: [bold]{orch_total:.1f}s[/bold]  baseline: [bold]{base_total:.1f}s[/bold]")
+    rprint(
+        f"\nTotal time — orchestrated: [bold]{orch_total:.1f}s[/bold]  baseline: [bold]{base_total:.1f}s[/bold]"
+    )
 
 
 def bench_command(
-    tier: Optional[str] = typer.Option(None, "--tier", "-t"),
-    baseline: str = typer.Option("qwen2.5-coder:7b", "--baseline", help="Single model to compare against"),
+    tier: str | None = typer.Option(None, "--tier", "-t"),
+    baseline: str = typer.Option(
+        "qwen2.5-coder:7b", "--baseline", help="Single model to compare against"
+    ),
     ollama_url: str = typer.Option("http://localhost:11434", "--ollama-url"),
-    output: Optional[Path] = typer.Option(None, "--output", "-o", help="Write full responses to JSON file"),
+    output: Path | None = typer.Option(
+        None, "--output", "-o", help="Write full responses to JSON file"
+    ),
 ):
     """Side-by-side latency comparison: orchestrated stack vs a single model."""
     asyncio.run(run_bench(tier=tier, baseline=baseline, ollama_url=ollama_url, output=output))

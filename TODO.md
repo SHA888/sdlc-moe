@@ -1,8 +1,8 @@
 # sdlc-moe — Comprehensive TODO
 
-**Repo:** https://github.com/SHA888/sdlc-moe  
-**Primary target:** 16 GB RAM, Windows, offline-first  
-**Last audited:** 2026-03-31  
+**Repo:** https://github.com/SHA888/sdlc-moe
+**Primary target:** 16 GB RAM, Windows, offline-first
+**Last audited:** 2026-03-31
 
 Status markers: `[x]` done · `[ ]` not started · `[~]` partial / exists but broken
 

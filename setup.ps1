@@ -37,9 +37,9 @@ function Get-DetectedTier {
     try {
         $ram = Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -ExpandProperty TotalPhysicalMemory
         $ramGB = [math]::Round($ram / 1GB, 1)
-        
+
         Write-Host "Detected RAM: $ramGB GB"
-        
+
         if ($ramGB -lt 12) { return "nano" }
         elseif ($ramGB -lt 24) { return "base" }
         elseif ($ramGB -lt 64) { return "standard" }
@@ -122,13 +122,13 @@ catch {
         Invoke-WebRequest -Uri $installerUrl -OutFile $installerPath
         & $installerPath
         Remove-Item $installerPath
-        
+
         # Add uv to PATH for this session
         $uvPath = Join-Path $env:USERPROFILE ".cargo\bin"
         if ($env:PATH -notlike "*$uvPath*") {
             $env:PATH = "$uvPath;$env:PATH"
         }
-        
+
         $uvVersion = uv --version 2>$null
         if ($LASTEXITCODE -eq 0) {
             Write-Info "uv $uvVersion"
@@ -156,12 +156,12 @@ if (-not $OllamaPath) {
         $ollamaPath = Join-Path $env:TEMP "OllamaSetup.exe"
         Write-Host "Downloading Ollama..."
         Invoke-WebRequest -Uri $ollamaUrl -OutFile $ollamaPath
-        
+
         Write-Host "Running Ollama installer..."
         Start-Process -FilePath $ollamaPath -Wait
-        
+
         Remove-Item $ollamaPath
-        
+
         # Refresh PATH
         $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "User")
     }
@@ -194,7 +194,7 @@ if (-not $OllamaProcess) {
     catch {
         Write-Warn "Ollama server not running. Starting in background..."
         Start-Process -FilePath $OllamaExe -ArgumentList "serve" -WindowStyle Hidden
-        
+
         # Wait up to 15s for it to start
         $started = $false
         for ($i = 1; $i -le 15; $i++) {
@@ -207,7 +207,7 @@ if (-not $OllamaProcess) {
             }
             catch { }
         }
-        
+
         if (-not $started) {
             Write-Error "Ollama server did not start. Check Ollama logs."
             exit 1
@@ -234,7 +234,7 @@ foreach ($model in $TierModels[$Tier]) {
         $models = & $OllamaExe list 2>$null | ConvertFrom-Json
         $modelName = ($model -split ':')[0]
         $alreadyPulled = $models.name -contains $modelName
-        
+
         if ($alreadyPulled) {
             Write-Info "Already pulled: $model"
             $Skipped++
@@ -274,6 +274,7 @@ Write-Host "Next steps:"
 Write-Host "  cd \path\to\this\repo"
 Write-Host "  uv pip install -e .        # install locally for development"
 Write-Host "  uv tool install sdlc-moe   # install from PyPI (when published)"
+Write-Host "  pre-commit install         # set up git hooks (optional)"
 Write-Host "  sdlc-moe info              # confirm your tier"
 Write-Host "  sdlc-moe preflight         # verify all models are ready"
 Write-Host "  sdlc-moe run `"write a Python function to parse CSV`""

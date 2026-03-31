@@ -147,7 +147,7 @@ if ! curl -sf "${OLLAMA_URL}/api/tags" >/dev/null 2>&1; then
   warn "Ollama server not running. Starting in background..."
   ollama serve &>/tmp/ollama-serve.log &
   OLLAMA_PID=$!
-  
+
   # Trap to clean up background process on script exit
   cleanup_ollama() {
     if [[ -n "$OLLAMA_PID" ]] && kill -0 "$OLLAMA_PID" 2>/dev/null; then
@@ -157,7 +157,7 @@ if ! curl -sf "${OLLAMA_URL}/api/tags" >/dev/null 2>&1; then
     fi
   }
   trap cleanup_ollama EXIT INT TERM
-  
+
   # Wait up to 15s for it to start
   for i in $(seq 1 15); do
     sleep 1
@@ -216,6 +216,7 @@ echo "Next steps:"
 echo "  cd /path/to/this/repo"
 echo "  uv pip install -e .        # install locally for development"
 echo "  uv tool install sdlc-moe   # install from PyPI (when published)"
+echo "  pre-commit install         # set up git hooks (optional)"
 echo "  sdlc-moe info              # confirm your tier"
 echo "  sdlc-moe preflight         # verify all models are ready"
 echo "  sdlc-moe run \"write a Python function to parse CSV\""

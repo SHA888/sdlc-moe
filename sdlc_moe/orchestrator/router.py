@@ -5,25 +5,26 @@ One Router instance per session.
 
 from __future__ import annotations
 
-import tomllib
 import os
+import tomllib
+from collections.abc import AsyncIterator
 from pathlib import Path
-from typing import AsyncIterator, Optional
 
-from ..hardware.probe import detect_tier, load_profile, ram_summary
+from ..hardware.probe import detect_tier, load_profile
 from ..ollama.client import OllamaClient
 from .classifier import Phase, classify
 from .context_bus import ContextBus
 
-_CONFIG_DIR = Path(os.environ.get("SDLC_MOE_CONFIG_DIR", 
-    Path(__file__).parent.parent.parent / "config"))
+_CONFIG_DIR = Path(
+    os.environ.get("SDLC_MOE_CONFIG_DIR", Path(__file__).parent.parent.parent / "config")
+)
 
 
 def _load_models_registry() -> dict:
     models_file = _CONFIG_DIR / "models.toml"
     if not models_file.exists():
         raise FileNotFoundError(f"Models configuration not found: {models_file}")
-    
+
     try:
         with open(models_file, "rb") as f:
             data = tomllib.load(f)
@@ -31,13 +32,13 @@ def _load_models_registry() -> dict:
                 raise KeyError(f"'models' key not found in {models_file}")
             return data["models"]
     except tomllib.TOMLDecodeError as e:
-        raise ValueError(f"Invalid TOML in {models_file}: {e}")
+        raise ValueError(f"Invalid TOML in {models_file}: {e}") from None
 
 
 class Router:
     def __init__(
         self,
-        tier: Optional[str] = None,
+        tier: str | None = None,
         ollama_url: str = "http://localhost:11434",
         dry_run: bool = False,
     ):
@@ -83,9 +84,9 @@ class Router:
         self,
         prompt: str,
         stream: bool = False,
-        file_path: Optional[str] = None,
-        task: Optional[str] = None,
-        phase_override: Optional[Phase] = None,
+        file_path: str | None = None,
+        task: str | None = None,
+        phase_override: Phase | None = None,
     ) -> str | AsyncIterator[str]:
         """
         Classify the prompt, select the model, inject context, call Ollama.
@@ -99,8 +100,10 @@ class Router:
         if self._dry_run:
             info = self.dry_run_route(prompt)
             if stream:
+
                 async def _dry_stream() -> AsyncIterator[str]:
                     yield f"[dry-run] phase={info['phase']} model={info['ollama_tag']}"
+
                 return _dry_stream()
             else:
                 return f"[dry-run] phase={info['phase']} model={info['ollama_tag']}"
@@ -108,21 +111,21 @@ class Router:
         # Classify
         if phase_override:
             phase = phase_override
-            confidence = 1.0
         else:
             result = classify(prompt, method=self._profile.get("classifier", "heuristic"))
             phase = result.phase
-            confidence = result.confidence
 
         # Resolve model with proper error handling
         phases = self._profile.get("phases", {})
         fallback_model = phases.get("codegen", "qwen25_coder_7b")
         model_key = phases.get(phase, fallback_model)
-        
+
         model_info = self._models.get(model_key)
         if not model_info:
-            raise ValueError(f"Model '{model_key}' not found in models registry for phase '{phase}'")
-        
+            raise ValueError(
+                f"Model '{model_key}' not found in models registry " f"for phase '{phase}'"
+            )
+
         ollama_tag = model_info.get("ollama")
         if not ollama_tag:
             raise ValueError(f"Model '{model_key}' missing 'ollama' tag in models registry")
@@ -139,6 +142,7 @@ class Router:
         max_tokens = limits.get("max_fim_tokens", 512) if phase == "fim" else 2048
 
         if stream:
+
             async def _stream() -> AsyncIterator[str]:
                 full = []
                 try:
@@ -154,12 +158,13 @@ class Router:
                     # Push completed assistant turn to context bus
                     self._ctx.push("user", prompt, model=ollama_tag, phase=phase)
                     self._ctx.push("assistant", "".join(full), model=ollama_tag, phase=phase)
-                except Exception as e:
+                except Exception:
                     # Even if streaming fails, push what we have
                     if full:
                         self._ctx.push("user", prompt, model=ollama_tag, phase=phase)
                         self._ctx.push("assistant", "".join(full), model=ollama_tag, phase=phase)
                     raise
+
             return _stream()
         else:
             response = await self._client.chat(
@@ -177,15 +182,15 @@ class Router:
         """Direct FIM call — bypasses classifier, always uses the FIM model for this tier."""
         phases = self._profile.get("phases", {})
         model_key = phases.get("fim", "qwen25_coder_7b")
-        
+
         model_info = self._models.get(model_key)
         if not model_info:
             raise ValueError(f"FIM model '{model_key}' not found in models registry")
-        
+
         ollama_tag = model_info.get("ollama")
         if not ollama_tag:
             raise ValueError(f"FIM model '{model_key}' missing 'ollama' tag in models registry")
-        
+
         limits = self._profile.get("limits", {})
         return await self._client.fim(
             model=ollama_tag,
@@ -205,6 +210,7 @@ class Router:
         if not status["ollama_running"]:
             return status
 
+        phases = self._profile.get("phases", {})
         required_keys = set(phases.values())
         orchestrator = self._profile.get("orchestrator_model")
         if orchestrator:
