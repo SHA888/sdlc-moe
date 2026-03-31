@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from typing import AsyncIterator, Optional
 
-import aiohttp
+import httpx
 
 
 class OllamaClient:
@@ -13,38 +13,45 @@ class OllamaClient:
     
     def __init__(self, base_url: str = "http://localhost:11434"):
         self.base_url = base_url.rstrip("/")
-        self._session: Optional[aiohttp.ClientSession] = None
+        self._client: Optional[httpx.AsyncClient] = None
     
-    async def _get_session(self) -> aiohttp.ClientSession:
-        """Get or create aiohttp session."""
-        if self._session is None or self._session.closed:
-            self._session = aiohttp.ClientSession()
-        return self._session
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Get or create httpx client."""
+        if self._client is None:
+            self._client = httpx.AsyncClient(timeout=60.0)
+        return self._client
     
     async def close(self) -> None:
         """Close the client session."""
-        if self._session and not self._session.closed:
-            await self._session.close()
+        if self._client:
+            await self._client.aclose()
+            self._client = None
+    
+    async def __aenter__(self):
+        return self
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
     
     async def is_running(self) -> bool:
         """Check if Ollama server is running."""
         try:
-            session = await self._get_session()
-            async with session.get(f"{self.base_url}/api/tags", timeout=aiohttp.ClientTimeout(total=5)):
-                return True
+            client = await self._get_client()
+            response = await client.get(f"{self.base_url}/api/tags", timeout=5.0)
+            return response.status_code == 200
         except Exception:
             return False
     
     async def is_model_available(self, model: str) -> bool:
         """Check if a model is already pulled locally."""
         try:
-            session = await self._get_session()
-            async with session.get(f"{self.base_url}/api/tags", timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status != 200:
-                    return False
-                data = await resp.json()
-                models = data.get("models", [])
-                return any(m.get("name", "").startswith(model.split(":")[0]) for m in models)
+            client = await self._get_client()
+            response = await client.get(f"{self.base_url}/api/tags", timeout=10.0)
+            if response.status_code != 200:
+                return False
+            data = response.json()
+            models = data.get("models", [])
+            return any(m.get("name", "").startswith(model.split(":")[0]) for m in models)
         except Exception:
             return False
     
@@ -54,13 +61,13 @@ class OllamaClient:
             return True
         
         try:
-            session = await self._get_session()
-            async with session.post(
+            client = await self._get_client()
+            response = await client.post(
                 f"{self.base_url}/api/pull",
                 json={"name": model, "stream": False},
-                timeout=aiohttp.ClientTimeout(total=600),  # Models can be large
-            ) as resp:
-                return resp.status == 200
+                timeout=600.0,  # Models can be large
+            )
+            return response.status_code == 200
         except Exception:
             return False
     
@@ -87,15 +94,15 @@ class OllamaClient:
         if system:
             payload["system"] = system
         
-        session = await self._get_session()
-        async with session.post(
+        client = await self._get_client()
+        response = await client.post(
             f"{self.base_url}/api/chat",
             json=payload,
-            timeout=aiohttp.ClientTimeout(total=300),
-        ) as resp:
-            resp.raise_for_status()
-            data = await resp.json()
-            return data.get("message", {}).get("content", "")
+            timeout=300.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get("message", {}).get("content", "")
     
     async def chat_stream(
         self,
@@ -120,14 +127,15 @@ class OllamaClient:
         if system:
             payload["system"] = system
         
-        session = await self._get_session()
-        async with session.post(
+        client = await self._get_client()
+        async with client.stream(
+            "POST",
             f"{self.base_url}/api/chat",
             json=payload,
-            timeout=aiohttp.ClientTimeout(total=300),
-        ) as resp:
-            resp.raise_for_status()
-            async for line in resp.content:
+            timeout=300.0,
+        ) as response:
+            response.raise_for_status()
+            async for line in response.aiter_lines():
                 if not line:
                     continue
                 try:
@@ -163,12 +171,12 @@ class OllamaClient:
             },
         }
         
-        session = await self._get_session()
-        async with session.post(
+        client = await self._get_client()
+        response = await client.post(
             f"{self.base_url}/api/generate",
             json=payload,
-            timeout=aiohttp.ClientTimeout(total=60),
-        ) as resp:
-            resp.raise_for_status()
-            data = await resp.json()
-            return data.get("response", "")
+            timeout=60.0,
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data.get("response", "")

@@ -14,24 +14,24 @@ These are verified breakages in the current committed code. The project is not i
 
 ### 0.1 Dependency mismatch — `pyproject.toml`
 
-- [ ] Replace `aiohttp>=3.9` with `httpx[http2]>=0.28` — the Ollama client uses `httpx`, not `aiohttp`; `aiohttp` is not imported anywhere in the codebase
-- [ ] Add `psutil>=6.1` — `hardware/probe.py` imports it; not declared
-- [ ] Bump `typer>=0.15` — current stable is 0.15.x; `>=0.9` is 18 months stale
-- [ ] Add `tomli>=2.2; python_version < "3.11"` — `tomllib` is stdlib on 3.11+, but the i18n loader uses it; guard for safety
-- [ ] Audit: confirm `rich>=13.7` (current stable) — current constraint `>=13.0` works but pin tighter
-- [ ] Dev extras: add `httpx[http2]` mock support → add `pytest-httpx>=0.35` to `[dev]`
+- [x] Replace `aiohttp>=3.9` with `httpx[http2]>=0.28` — the Ollama client uses `httpx`, not `aiohttp`; `aiohttp` is not imported anywhere in the codebase
+- [x] Add `psutil>=6.1` — `hardware/probe.py` imports it; not declared
+- [x] Bump `typer>=0.15` — current stable is 0.15.x; `>=0.9` is 18 months stale
+- [x] Add `tomli>=2.2; python_version < "3.11"` — `tomllib` is stdlib on 3.11+, but the i18n loader uses it; guard for safety
+- [x] Audit: confirm `rich>=13.7` (current stable) — current constraint `>=13.0` works but pin tighter
+- [x] Dev extras: add `httpx[http2]` mock support → add `pytest-httpx>=0.35` to `[dev]`
 
 ### 0.2 Package layout mismatch
 
-- [ ] Resolve conflict: GitHub has flat layout (`sdlc_moe/`), local disk has `src/` layout (`src/sdlc_moe/`)
+- [x] Resolve conflict: GitHub has flat layout (`sdlc_moe/`), local disk has `src/` layout (`src/sdlc_moe/`)
   - Decision: pick one. Recommendation: keep flat layout to match what is already on GitHub
   - If keeping flat: remove `src/` prefix from all local paths, confirm `[tool.hatch.build.targets.wheel] packages = ["sdlc_moe"]` is correct
   - If switching to `src/`: update `pyproject.toml` to `packages = ["src/sdlc_moe"]`
-- [ ] Verify entry point: `sdlc_moe.cli:main` — confirm the `main` symbol is exported from `cli.py` (Typer apps need `app()` wrapped in a `main()` function or use `app` directly)
+- [x] Verify entry point: `sdlc_moe.cli:main` — confirm the `main` symbol is exported from `cli.py` (Typer apps need `app()` wrapped in a `main()` function or use `app` directly)
 
 ### 0.3 Windows gap — primary target has no setup path
 
-- [ ] Write `setup.ps1` — PowerShell equivalent of `setup.sh`
+- [x] Write `setup.ps1` — PowerShell equivalent of `setup.sh`
   - Detect RAM via `(Get-CimInstance Win32_PhysicalMemory | Measure-Object Capacity -Sum).Sum`
   - Map to tier: nano / base / standard / extended
   - Check if Ollama is installed (`Get-Command ollama`); prompt to install if not
