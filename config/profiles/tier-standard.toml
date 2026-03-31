@@ -1,0 +1,25 @@
+# Standard tier configuration (32 GB RAM)
+# Full stack with larger models for complex tasks
+
+[hardware]
+ram_gb = 32
+tier = "standard"
+
+[phases]
+requirements = "mistral_small3_24b"
+architecture = "qwen25_coder_32b"
+algorithm = "deepseek_r1_14b"
+codegen = "qwen25_coder_32b"
+fim = "starcoder2_15b"
+testgen = "deepseek_coder_v2_16b"
+debug = "deepseek_r1_14b"
+docs = "gemma3_12b"
+security = "phi4_14b"
+
+[classifier]
+method = "heuristic"
+
+[limits]
+max_tokens = 6144
+max_fim_tokens = 512
+num_ctx = 16384

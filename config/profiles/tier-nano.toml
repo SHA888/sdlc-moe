@@ -1,0 +1,25 @@
+# Nano tier configuration (8 GB RAM)
+# Single model for all phases to minimize memory usage
+
+[hardware]
+ram_gb = 8
+tier = "nano"
+
+[phases]
+requirements = "qwen25_coder_7b"
+architecture = "qwen25_coder_7b"
+algorithm = "qwen25_coder_7b"
+codegen = "qwen25_coder_7b"
+fim = "qwen25_coder_7b"
+testgen = "qwen25_coder_7b"
+debug = "qwen25_coder_7b"
+docs = "qwen25_coder_7b"
+security = "qwen25_coder_7b"
+
+[classifier]
+method = "heuristic"
+
+[limits]
+max_tokens = 2048
+max_fim_tokens = 256
+num_ctx = 4096

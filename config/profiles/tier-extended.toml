@@ -1,0 +1,29 @@
+# Extended tier configuration (64+ GB RAM)
+# Full stack with largest models including Llama3.3 70B
+
+[hardware]
+ram_gb = 64
+tier = "extended"
+
+[phases]
+requirements = "mistral_small3_24b"
+architecture = "qwen25_coder_32b"
+algorithm = "deepseek_r1_14b"
+codegen = "qwen25_coder_32b"
+fim = "starcoder2_15b"
+testgen = "deepseek_coder_v2_16b"
+debug = "deepseek_r1_14b"
+docs = "gemma3_12b"
+security = "phi4_14b"
+
+[orchestrator_model]
+model = "llama33_70b"
+phases = ["architecture", "algorithm", "debug"]
+
+[classifier]
+method = "heuristic"
+
+[limits]
+max_tokens = 8192
+max_fim_tokens = 1024
+num_ctx = 32768

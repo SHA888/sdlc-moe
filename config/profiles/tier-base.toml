@@ -1,0 +1,25 @@
+# Base tier configuration (16 GB RAM)
+# Specialist models per phase for better performance
+
+[hardware]
+ram_gb = 16
+tier = "base"
+
+[phases]
+requirements = "phi4_14b"
+architecture = "deepseek_r1_14b"
+algorithm = "deepseek_r1_14b"
+codegen = "qwen25_coder_7b"
+fim = "starcoder2_15b"
+testgen = "deepseek_coder_v2_16b"
+debug = "deepseek_r1_14b"
+docs = "gemma3_12b"
+security = "phi4_14b"
+
+[classifier]
+method = "heuristic"
+
+[limits]
+max_tokens = 4096
+max_fim_tokens = 512
+num_ctx = 8192

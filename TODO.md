@@ -37,33 +37,33 @@ These are verified breakages in the current committed code. The project is not i
   - Check if Ollama is installed (`Get-Command ollama`); prompt to install if not
   - Pull tier-appropriate models with resume support (`ollama pull` is already resumable)
   - Add execution policy note: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
-- [ ] Update README Quick Start section to show Windows path first (primary target = Windows)
-- [ ] Test `sdlc-moe` CLI on Windows: confirm `asyncio` event loop policy — Python on Windows defaults to `ProactorEventLoop`; `httpx` async works fine but verify no `SelectorEventLoop` assumption in the code
+- [x] Update README Quick Start section to show Windows path first (primary target = Windows)
+- [x] Test `sdlc-moe` CLI on Windows: confirm `asyncio` event loop policy — Python on Windows defaults to `ProactorEventLoop`; `httpx` async works fine but verify no `SelectorEventLoop` assumption in the code
 
 ---
 
 ## Phase 1 — Source Sync (commit local work to GitHub)
 
-- [ ] Reconcile local `src/` vs GitHub flat layout (see 0.2)
-- [ ] Push all local files not yet on GitHub:
-  - `config/models.toml`
-  - `config/profiles/tier-nano.toml`
-  - `config/profiles/tier-base.toml`
-  - `config/profiles/tier-standard.toml`
-  - `config/profiles/tier-extended.toml`
-  - `src/sdlc_moe/hardware/probe.py`
-  - `src/sdlc_moe/orchestrator/classifier.py`
-  - `src/sdlc_moe/orchestrator/context_bus.py`
-  - `src/sdlc_moe/orchestrator/router.py`
-  - `src/sdlc_moe/ollama/client.py`
-  - `src/sdlc_moe/i18n/` (all locale files)
-  - `src/sdlc_moe/bench.py`
-  - `src/sdlc_moe/cli.py`
-  - `tests/routing/test_classifier.py`
-  - `.github/workflows/ci.yml`
-  - `CONTRIBUTING.md`
-  - `MODELS.md`
-- [ ] Add `.github/workflows/ci.yml` if not already — matrix: Python 3.12, 3.13; OS: ubuntu-latest, windows-latest
+- [x] Reconcile local `src/` vs GitHub flat layout (see 0.2)
+- [x] Push all local files not yet on GitHub:
+  - [x] `config/models.toml`
+  - [x] `config/profiles/tier-nano.toml`
+  - [x] `config/profiles/tier-base.toml`
+  - [x] `config/profiles/tier-standard.toml`
+  - [x] `config/profiles/tier-extended.toml`
+  - [x] `src/sdlc_moe/hardware/probe.py`
+  - [x] `src/sdlc_moe/orchestrator/classifier.py`
+  - [x] `src/sdlc_moe/orchestrator/context_bus.py`
+  - [x] `src/sdlc_moe/orchestrator/router.py`
+  - [x] `src/sdlc_moe/ollama/client.py`
+  - [x] `src/sdlc_moe/i18n/` (all locale files)
+  - [x] `src/sdlc_moe/bench.py` (moved to tests/)
+  - [x] `src/sdlc_moe/cli.py`
+  - [x] `tests/routing/test_classifier.py`
+  - [x] `.github/workflows/ci.yml`
+  - [x] `CONTRIBUTING.md`
+  - [x] `MODELS.md`
+- [x] Add `.github/workflows/ci.yml` if not already — matrix: Python 3.12, 3.13; OS: ubuntu-latest, windows-latest
 - [ ] Tag `v0.1.0` after push and verify CI passes
 
 ---
