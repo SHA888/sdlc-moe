@@ -20,7 +20,7 @@ from rich import print as rprint
 from rich.console import Console
 
 try:
-    from .bench import run_bench
+    from tests.bench import run_bench
 except ImportError:
     run_bench = None
 from .hardware.probe import detect_tier, ram_summary
@@ -147,7 +147,7 @@ def bench(
 ) -> None:
     """Side-by-side latency comparison: orchestrated stack vs a single model."""
     if run_bench is None:
-        rprint("[red]Bench command not available - bench.py is at project root[/red]")
+        rprint("[red]Bench command not available - tests/bench.py not found[/red]")
         sys.exit(1)
     asyncio.run(run_bench(tier=tier, baseline=baseline, ollama_url=ollama_url, output=output))
 
