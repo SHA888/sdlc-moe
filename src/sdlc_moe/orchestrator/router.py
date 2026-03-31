@@ -16,7 +16,7 @@ from .classifier import Phase, classify
 from .context_bus import ContextBus
 
 _CONFIG_DIR = Path(
-    os.environ.get("SDLC_MOE_CONFIG_DIR", Path(__file__).parent.parent.parent / "config")
+    os.environ.get("SDLC_MOE_CONFIG_DIR", Path(__file__).parent.parent.parent.parent / "config")
 )
 
 

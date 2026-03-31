@@ -19,9 +19,12 @@ import typer
 from rich import print as rprint
 from rich.console import Console
 
-from sdlc_moe.bench import run_bench
-from sdlc_moe.hardware.probe import detect_tier, ram_summary
-from sdlc_moe.orchestrator.router import Router
+try:
+    from .bench import run_bench
+except ImportError:
+    run_bench = None
+from .hardware.probe import detect_tier, ram_summary
+from .orchestrator.router import Router
 
 console = Console()
 app = typer.Typer(help="SDLC-aware local LLM orchestrator", no_args_is_help=True)
@@ -143,6 +146,9 @@ def bench(
     ),
 ) -> None:
     """Side-by-side latency comparison: orchestrated stack vs a single model."""
+    if run_bench is None:
+        rprint("[red]Bench command not available - bench.py is at project root[/red]")
+        sys.exit(1)
     asyncio.run(run_bench(tier=tier, baseline=baseline, ollama_url=ollama_url, output=output))
 
 

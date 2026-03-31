@@ -51,7 +51,10 @@ Repository = "https://github.com/SHA888/sdlc-moe"
 Documentation = "https://github.com/SHA888/sdlc-moe#readme"
 
 [tool.hatch.build.targets.wheel]
-packages = ["sdlc_moe"]
+packages = ["src/sdlc_moe"]
+
+[tool.hatch.envs.default]
+python-path = ["src"]
 
 [tool.mypy]
 python_version = "3.12"

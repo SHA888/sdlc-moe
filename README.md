@@ -50,7 +50,13 @@ Developer yang mengirim 500 query per hari via cloud API menghabiskan **$15–30
 ```bash
 # One-line setup: installs Ollama + pulls all models for your RAM tier
 # (Safe to re-run — already-pulled models are skipped. Resumable on slow connections.)
-curl -fsSL https://raw.githubusercontent.com/SHA888/sdlc-moe/main/setup.sh | bash
+
+# Linux/macOS:
+curl -fsSL https://raw.githubusercontent.com/SHA888/sdlc-moe/main/scripts/setup.sh | bash
+
+# Windows (PowerShell):
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/SHA888/sdlc-moe/main/scripts/setup.ps1" -OutFile "setup.ps1"; ./setup.ps1
 
 # Then install the CLI
 pip install uv
