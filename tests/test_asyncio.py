@@ -23,12 +23,12 @@ def test_event_loop_policy():
     try:
         result = asyncio.run(test_func())
         print(f"asyncio.run() test: {result}")
-        return True
+        assert result == "success"
     except Exception as e:
         print(f"asyncio.run() failed: {e}")
-        return False
+        raise
 
 
 if __name__ == "__main__":
-    success = test_event_loop_policy()
-    sys.exit(0 if success else 1)
+    test_event_loop_policy()
+    sys.exit(0)

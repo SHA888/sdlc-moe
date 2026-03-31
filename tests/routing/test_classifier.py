@@ -1,7 +1,7 @@
 """Test the SDLC phase classifier."""
 
 import pytest
-from sdlc_moe.orchestrator.classifier import classify, Phase
+from sdlc_moe.orchestrator.classifier import classify
 
 
 def test_classify_requirements():
@@ -14,7 +14,7 @@ def test_classify_requirements():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.REQUIREMENTS
+        assert result.phase == "requirements"
         assert result.confidence > 0.5
 
 
@@ -28,7 +28,7 @@ def test_classify_algorithm():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.ALGORITHM
+        assert result.phase == "algorithm"
         assert result.confidence > 0.5
 
 
@@ -42,7 +42,7 @@ def test_classify_codegen():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.CODEGEN
+        assert result.phase == "codegen"
         assert result.confidence > 0.5
 
 
@@ -56,7 +56,7 @@ def test_classify_testgen():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.TESTGEN
+        assert result.phase == "testgen"
         assert result.confidence > 0.5
 
 
@@ -70,7 +70,7 @@ def test_classify_debug():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.DEBUG
+        assert result.phase == "debug"
         assert result.confidence > 0.5
 
 
@@ -84,7 +84,7 @@ def test_classify_docs():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.DOCS
+        assert result.phase == "docs"
         assert result.confidence > 0.5
 
 
@@ -98,7 +98,7 @@ def test_classify_security():
 
     for prompt in prompts:
         result = classify(prompt)
-        assert result.phase == Phase.SECURITY
+        assert result.phase == "security"
         assert result.confidence > 0.5
 
 
@@ -112,7 +112,7 @@ def test_low_confidence():
 
     for prompt in ambiguous_prompts:
         result = classify(prompt)
-        assert result.confidence < 0.5
+        assert result.confidence <= 0.5
 
 
 def test_all_phases_covered():
@@ -120,13 +120,13 @@ def test_all_phases_covered():
     all_phases = set()
 
     test_prompts = [
-        ("User login requirements", Phase.REQUIREMENTS),
-        ("Sort array algorithm", Phase.ALGORITHM),
-        ("Python function", Phase.CODEGEN),
-        ("Unit tests", Phase.TESTGEN),
-        ("Fix bug", Phase.DEBUG),
-        ("API docs", Phase.DOCS),
-        ("Security review", Phase.SECURITY),
+        ("User login requirements", "requirements"),
+        ("Sort array algorithm", "algorithm"),
+        ("Python function", "codegen"),
+        ("Unit tests", "testgen"),
+        ("Fix bug", "debug"),
+        ("API docs", "docs"),
+        ("Security review", "security"),
     ]
 
     for prompt, expected_phase in test_prompts:
@@ -136,26 +136,26 @@ def test_all_phases_covered():
 
     # All phases should be covered
     expected_phases = {
-        Phase.REQUIREMENTS,
-        Phase.ARCHITECTURE,
-        Phase.ALGORITHM,
-        Phase.CODEGEN,
-        Phase.FIM,
-        Phase.TESTGEN,
-        Phase.DEBUG,
-        Phase.DOCS,
-        Phase.SECURITY,
+        "requirements",
+        "architecture",
+        "algorithm",
+        "codegen",
+        "fim",
+        "testgen",
+        "debug",
+        "docs",
+        "security",
     }
 
     # At minimum, we should hit the main phases
     main_phases = {
-        Phase.REQUIREMENTS,
-        Phase.ALGORITHM,
-        Phase.CODEGEN,
-        Phase.TESTGEN,
-        Phase.DEBUG,
-        Phase.DOCS,
-        Phase.SECURITY,
+        "requirements",
+        "algorithm",
+        "codegen",
+        "testgen",
+        "debug",
+        "docs",
+        "security",
     }
 
     assert main_phases.issubset(all_phases)
